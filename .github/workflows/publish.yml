@@ -112,8 +112,8 @@ jobs:
       - name: List bundled libs
         run: ls -R ${{ env.RELEASE_DIR }}
 
-      - name: Build TypeScript
-        run: bun run build:ts
+      - name: Build TypeScript and copy libraries
+        run: bun run build:publish
 
       - name: Set up npm authentication
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc

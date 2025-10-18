@@ -39,7 +39,8 @@
 		"prepack": "bun run build",
 		"build:rust": "cd rust-pty && cargo build --release",
 		"build:ts": "bun build ./src/index.ts --outdir ./dist --target bun --declaration --external bun:ffi && tsc --emitDeclarationOnly --declaration --outDir dist",
-		"build": "bun run build:rust && bun run build:ts",
+		"build": "bun run build.ts",
+		"build:publish": "bun run copy-libs-to-dist && bun run build:ts",
 		"test": "cd rust-pty && cargo build --release && cd .. && bun test src/",
 		"test:integration": "cd rust-pty && cargo build --release && cd .. && RUN_INTEGRATION_TESTS=true bun test src/terminal.integration.test.ts",
 		"check": "bun run type-check",
@@ -56,10 +57,7 @@
 		"dist/**/*",
 		"README.md",
 		"LICENSE",
-		"CHANGELOG.md",
-		"rust-pty/target/release/*.so",
-		"rust-pty/target/release/*.dylib",
-		"rust-pty/target/release/*.dll"
+		"CHANGELOG.md"
 	],
 	"devDependencies": {
 		"@biomejs/biome": "2.2.6",

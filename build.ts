@@ -5,8 +5,8 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { existsSync, mkdirSync, copyFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 // Configuration
 const RUST_DIR = "./rust-pty";
@@ -31,5 +31,20 @@ if (rustBuild.status !== 0) {
 }
 
 console.log("Rust library built successfully!");
+
+// Copy native library to dist directory
+const platform = process.platform;
+const libName = platform === "darwin" ? "librust_pty.dylib" : platform === "win32" ? "rust_pty.dll" : "librust_pty.so";
+const libSourcePath = join(RUST_DIR, "target", "release", libName);
+const libDestPath = join(OUTPUT_DIR, libName);
+
+if (existsSync(libSourcePath)) {
+  console.log(`Copying ${libName} to dist directory...`);
+  copyFileSync(libSourcePath, libDestPath);
+  console.log("Native library copied successfully!");
+} else {
+  console.error(`Native library not found at ${libSourcePath}`);
+  process.exit(1);
+}
 
 // Building TypeScript code is handled by the bun CLI (see package.json scripts) 

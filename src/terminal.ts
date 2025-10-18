@@ -3,7 +3,7 @@
 import { dlopen, FFIType, ptr } from "bun:ffi";
 import { Buffer } from "node:buffer";
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import type { IExitEvent, IPty, IPtyForkOptions } from "./interfaces";
 import { EventEmitter } from "./interfaces";
 
@@ -33,6 +33,7 @@ function resolveLibPath(): string {
   const here = base.replace(/\/(dist|src)\/.*$/, "");
 
   const fallbackPaths = [
+    join(dirname(base), filename), // same directory as index.js (for installed packages)
     join(here, "rust-pty", "target", "release", filename), // project root/rust-pty/target/release
     join(here, "..", "bun-pty", "rust-pty", "target", "release", filename), // monorepo setups
     join(
