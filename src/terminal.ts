@@ -35,7 +35,16 @@ function resolveLibPath(): string {
   const fallbackPaths = [
     join(dirname(base), filename), // same directory as index.js (for installed packages)
     join(here, "rust-pty", "target", "release", filename), // project root/rust-pty/target/release
-    join(here, "..", "bun-pty", "rust-pty", "target", "release", filename), // monorepo setups
+    join(here, "..", "bun-pty", "rust-pty", "target", "release", filename), // legacy monorepo setups
+    join(
+      here,
+      "..",
+      "bun-pty-rust",
+      "rust-pty",
+      "target",
+      "release",
+      filename,
+    ), // monorepo when package renamed to bun-pty-rust
     join(
       process.cwd(),
       "node_modules",
@@ -44,7 +53,16 @@ function resolveLibPath(): string {
       "target",
       "release",
       filename,
-    ),
+    ), // legacy node_modules installs
+    join(
+      process.cwd(),
+      "node_modules",
+      "bun-pty-rust",
+      "rust-pty",
+      "target",
+      "release",
+      filename,
+    ), // standard node_modules installs
   ];
 
   for (const path of fallbackPaths) {

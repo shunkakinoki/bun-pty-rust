@@ -1,8 +1,11 @@
 /**
- * Example showing how to use bun-pty with TypeScript
+ * Example showing how to use the local bun-pty-rust build with TypeScript
+ *
+ * This file intentionally resolves against ../dist so the example always uses
+ * the locally built artifacts instead of a published package.
  */
-import { spawn } from 'bun-pty';
-import type { IPty, IExitEvent } from 'bun-pty';
+import { spawn } from '../dist/index.js';
+import type { IPty, IExitEvent } from '../dist/index.js';
 
 // Type-safe options
 interface TerminalOptions {
@@ -53,7 +56,7 @@ async function main() {
   });
   
   // Write some commands
-  terminal.write('echo "Hello from TypeScript with bun-pty"\n');
+  terminal.write('echo "Hello from TypeScript with bun-pty-rust"\n');
   
   // Resize the terminal
   terminal.resize(120, 40);
