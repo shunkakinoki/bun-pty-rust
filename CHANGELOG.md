@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2025-10-18
+
+### Added
+- Fork release of bun-pty-rust
+- Repository renamed and initialized as fork from [sursaone/bun-pty](https://github.com/sursaone/bun-pty)
+- Updated repository URLs and package metadata
+- Maintained all original functionality with Rust-based PTY implementation
+
 ## [0.2.1] - 2025-05-15
 
 ### Fixed
@@ -22,14 +30,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Optimized package size by excluding unnecessary files
 - Improved build process for more reliable type generation
-
-## [0.1.0] - 2025-05-13
-
-### Added
-- Initial release
-- Cross-platform PTY support for macOS, Linux, and Windows
-- Basic API for terminal process management
-- Core PTY functionality: spawn, read, write, resize, and kill
-- Process ID retrieval support
-- TypeScript type definitions
-- Integration tests 

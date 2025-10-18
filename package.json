@@ -1,17 +1,17 @@
 {
-	"name": "bun-pty",
-	"version": "0.3.2",
+	"name": "bun-pty-rust",
+	"version": "0.1.0",
 	"description": "Cross-platform pseudoterminal (PTY) implementation for Bun with native performance",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/sursaone/bun-pty.git"
+		"url": "git+https://github.com/shunkakinoki/bun-pty-rust.git"
 	},
-	"homepage": "https://github.com/sursaone/bun-pty#readme",
+	"homepage": "https://github.com/shunkakinoki/bun-pty-rust#readme",
 	"bugs": {
-		"url": "https://github.com/sursaone/bun-pty/issues"
+		"url": "https://github.com/shunkakinoki/bun-pty-rust/issues"
 	},
 	"author": {
 		"name": "Dilip Thapa",

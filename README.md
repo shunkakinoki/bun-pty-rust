@@ -1,8 +1,10 @@
-# bun-pty
+# bun-pty-rust
 
-[![NPM Version](https://img.shields.io/npm/v/bun-pty.svg)](https://www.npmjs.com/package/bun-pty)
+[![NPM Version](https://img.shields.io/npm/v/bun-pty-rust.svg)](https://www.npmjs.com/package/bun-pty-rust)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Bun Compatible](https://img.shields.io/badge/Bun-%E2%89%A51.0.0-black)](https://bun.sh)
+
+A fork of [bun-pty](https://github.com/sursaone/bun-pty) with enhanced Rust-based PTY implementation for improved performance and reliability.
 
 A cross-platform pseudo-terminal (PTY) implementation for Bun, powered by Rust's portable-pty library and Bun's FFI capabilities.
 
@@ -18,7 +20,7 @@ A cross-platform pseudo-terminal (PTY) implementation for Bun, powered by Rust's
 ## 📦 Installation
 
 ```bash
-bun add bun-pty
+bun add bun-pty-rust
 ```
 
 ## ⚙️ Requirements
@@ -194,8 +196,8 @@ If you want to build the package from source:
 
 ```bash
 # Clone the repository
-git clone https://github.com/sursaone/bun-pty.git
-cd bun-pty
+git clone https://github.com/shunkakinoki/bun-pty-rust.git
+cd bun-pty-rust
 
 # Install dependencies
 bun install
