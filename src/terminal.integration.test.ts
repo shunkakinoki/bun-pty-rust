@@ -19,6 +19,16 @@ if (!runIntegrationTests) {
 // Keep track of terminals created so they can be cleaned up
 const terminals: Terminal[] = [];
 
+// Helper function to convert process.env to Record<string, string>
+// Filters out undefined values to satisfy TypeScript
+const getEnv = (): Record<string, string> => {
+  return Object.fromEntries(
+    Object.entries(process.env).filter(
+      (entry): entry is [string, string] => entry[1] !== undefined,
+    ),
+  );
+};
+
 afterEach(() => {
   // Clean up any terminals created during tests
   for (const term of terminals) {
@@ -32,7 +42,7 @@ afterEach(() => {
 });
 
 test("Terminal can spawn a real process", () => {
-  const terminal = new Terminal("sleep", ["1"], { env: process.env });
+  const terminal = new Terminal("sleep", ["1"], { env: getEnv() });
   terminals.push(terminal);
 
   expect(terminal.pid).toBeGreaterThan(0);
@@ -41,7 +51,7 @@ test("Terminal can spawn a real process", () => {
 test("Terminal can receive data from a real process", async () => {
   // Use echo directly since the command line is parsed as shell words
   const terminal = new Terminal("echo", ["Hello from Bun PTY"], {
-    env: process.env,
+    env: getEnv(),
   });
   terminals.push(terminal);
 
@@ -79,7 +89,7 @@ test("Terminal can send data to a real process", async () => {
   let hasExited = false;
 
   // Use cat to echo back input
-  const terminal = new Terminal("cat", [], { env: process.env });
+  const terminal = new Terminal("cat", [], { env: getEnv() });
   terminals.push(terminal);
 
   terminal.onData((data) => {
@@ -118,7 +128,7 @@ test("Terminal can send data to a real process", async () => {
 });
 
 test("Terminal can resize a real terminal", async () => {
-  const terminal = new Terminal("sleep", ["1"], { env: process.env });
+  const terminal = new Terminal("sleep", ["1"], { env: getEnv() });
   terminals.push(terminal);
 
   // Should not throw
@@ -132,7 +142,7 @@ test("Terminal can resize a real terminal", async () => {
 });
 
 test("Terminal can kill a real process", async () => {
-  const terminal = new Terminal("sleep", ["10"], { env: process.env });
+  const terminal = new Terminal("sleep", ["10"], { env: getEnv() });
   terminals.push(terminal);
 
   let exitEvent: IExitEvent | null = null;
@@ -158,7 +168,7 @@ test("Terminal can kill a real process", async () => {
 
 test("Terminal can retrieve the correct process ID", () => {
   // Create a terminal with sleep command (long-running so we can check PID)
-  const terminal = new Terminal("sleep", ["5"], { env: process.env });
+  const terminal = new Terminal("sleep", ["5"], { env: getEnv() });
   terminals.push(terminal);
 
   // Check that we got a valid PID
@@ -190,7 +200,7 @@ test("Terminal can run a bash script", async () => {
   let hasExited = false;
 
   // Use sh to run a simple script
-  const terminal = new Terminal("sh", [], { env: process.env });
+  const terminal = new Terminal("sh", [], { env: getEnv() });
   terminals.push(terminal);
 
   terminal.onData((data) => {
@@ -239,7 +249,7 @@ test("Terminal can pass custom environment variables", async () => {
     ["-c", '"echo \\"TEST_VAR=$TEST_VAR\\""'],
     {
       env: {
-        PATH: process.env.PATH || "/usr/bin:/bin",
+        PATH: process.env.PATH ?? "/usr/bin:/bin",
         TEST_VAR: "custom_value_123",
       },
     },
@@ -283,7 +293,7 @@ test("Terminal can inherit parent environment with custom overrides", async () =
     ],
     {
       env: {
-        ...process.env,
+        ...getEnv(),
         CUSTOM_VAR: "inherited_test",
       },
     },
@@ -373,7 +383,7 @@ test("Terminal can handle environment variables with special characters", async 
     ["-c", '"echo \\"SPECIAL=$SPECIAL_VAR\\""'],
     {
       env: {
-        PATH: process.env.PATH || "/usr/bin:/bin",
+        PATH: process.env.PATH ?? "/usr/bin:/bin",
         SPECIAL_VAR: "value with spaces and=equals",
       },
     },
@@ -414,7 +424,7 @@ test("Terminal can pass multiple environment variables", async () => {
     ["-c", '"echo \\"VAR1=$VAR1 VAR2=$VAR2 VAR3=$VAR3\\""'],
     {
       env: {
-        PATH: process.env.PATH || "/usr/bin:/bin",
+        PATH: process.env.PATH ?? "/usr/bin:/bin",
         VAR1: "value1",
         VAR2: "value2",
         VAR3: "value3",
@@ -454,7 +464,7 @@ test("Terminal handles large output without data loss", async () => {
   let hasExited = false;
 
   // Use sh with a for loop to generate 1000 numbered lines
-  const terminal = new Terminal("sh", [], { env: process.env });
+  const terminal = new Terminal("sh", [], { env: getEnv() });
   terminals.push(terminal);
 
   terminal.onData((data) => {
