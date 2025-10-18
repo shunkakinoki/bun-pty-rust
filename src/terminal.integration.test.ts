@@ -82,7 +82,7 @@ test("Terminal can send data to a real process", async () => {
   // Use a properly quoted bash command
   const terminal = new Terminal("bash", [
     "-c",
-    '"read line; echo \\"You typed: $line\\""',
+    'read line; echo "You typed: $line"',
   ]);
   terminals.push(terminal);
 
@@ -321,7 +321,7 @@ test("Terminal with empty env should not have parent environment variables", asy
     "/bin/bash",
     [
       "-c",
-      `"echo \\"TEST_VAR_EXISTS=$([[ -n \\"$${uniqueTestVar}\\" ]] && echo 'yes' || echo 'no')\\""`,
+      `echo "TEST_VAR_EXISTS=$([[ -n "$${uniqueTestVar}" ]] && echo 'yes' || echo 'no')"`,
     ],
     {
       env: {},
