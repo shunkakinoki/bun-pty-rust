@@ -165,12 +165,13 @@ export class Terminal implements IPty {
     const cmdline = [file, ...args.map(quoteArg)].join(" ");
 
     // Format environment variables as null-terminated string
-    // Default to parent process environment if not specified
-    const env = opts.env ?? process.env;
-    const envPairs = Object.entries(env)
-      .filter(([_, v]) => v !== undefined)
-      .map(([k, v]) => `${k}=${v}`);
-    const envStr = `${envPairs.join("\0")}\0`;
+    let envStr = "";
+    if (opts.env) {
+      const envPairs = Object.entries(opts.env)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => `${k}=${v}`);
+      envStr = `${envPairs.join("\0")}\0`;
+    }
 
     this.handle = lib.symbols.bun_pty_spawn(
       Buffer.from(`${cmdline}\0`, "utf8"),

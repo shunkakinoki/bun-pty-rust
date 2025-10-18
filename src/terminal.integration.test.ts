@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 test("Terminal can spawn a real process", () => {
-  const terminal = new Terminal("sleep", ["1"]);
+  const terminal = new Terminal("sleep", ["1"], { env: process.env });
   terminals.push(terminal);
 
   expect(terminal.pid).toBeGreaterThan(0);
@@ -40,7 +40,9 @@ test("Terminal can spawn a real process", () => {
 
 test("Terminal can receive data from a real process", async () => {
   // Use echo directly since the command line is parsed as shell words
-  const terminal = new Terminal("echo", ["Hello from Bun PTY"]);
+  const terminal = new Terminal("echo", ["Hello from Bun PTY"], {
+    env: process.env,
+  });
   terminals.push(terminal);
 
   // Collect output and track when process exits
@@ -77,7 +79,7 @@ test("Terminal can send data to a real process", async () => {
   let hasExited = false;
 
   // Use cat to echo back input
-  const terminal = new Terminal("cat");
+  const terminal = new Terminal("cat", [], { env: process.env });
   terminals.push(terminal);
 
   terminal.onData((data) => {
@@ -116,7 +118,7 @@ test("Terminal can send data to a real process", async () => {
 });
 
 test("Terminal can resize a real terminal", async () => {
-  const terminal = new Terminal("sleep", ["1"]);
+  const terminal = new Terminal("sleep", ["1"], { env: process.env });
   terminals.push(terminal);
 
   // Should not throw
@@ -130,7 +132,7 @@ test("Terminal can resize a real terminal", async () => {
 });
 
 test("Terminal can kill a real process", async () => {
-  const terminal = new Terminal("sleep", ["10"]);
+  const terminal = new Terminal("sleep", ["10"], { env: process.env });
   terminals.push(terminal);
 
   let exitEvent: IExitEvent | null = null;
@@ -156,7 +158,7 @@ test("Terminal can kill a real process", async () => {
 
 test("Terminal can retrieve the correct process ID", () => {
   // Create a terminal with sleep command (long-running so we can check PID)
-  const terminal = new Terminal("sleep", ["5"]);
+  const terminal = new Terminal("sleep", ["5"], { env: process.env });
   terminals.push(terminal);
 
   // Check that we got a valid PID
@@ -188,7 +190,7 @@ test("Terminal can run a bash script", async () => {
   let hasExited = false;
 
   // Use sh to run a simple script
-  const terminal = new Terminal("sh");
+  const terminal = new Terminal("sh", [], { env: process.env });
   terminals.push(terminal);
 
   terminal.onData((data) => {
@@ -452,7 +454,7 @@ test("Terminal handles large output without data loss", async () => {
   let hasExited = false;
 
   // Use sh with a for loop to generate 1000 numbered lines
-  const terminal = new Terminal("sh");
+  const terminal = new Terminal("sh", [], { env: process.env });
   terminals.push(terminal);
 
   terminal.onData((data) => {
