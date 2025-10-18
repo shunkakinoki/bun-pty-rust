@@ -19,32 +19,44 @@ function resolveLibPath(): string {
   if (env && existsSync(env)) return env;
 
   const platform = process.platform;
+  const arch = process.arch;
 
-  const filename =
-    platform === "darwin"
-      ? "librust_pty.dylib"
-      : platform === "win32"
-        ? "rust_pty.dll"
-        : "librust_pty.so";
+  const archSuffixes =
+    arch === "arm64"
+      ? ["arm64", "aarch64"]
+      : arch === "x64"
+        ? ["x86_64", "x64"]
+        : arch === "ia32"
+          ? ["ia32", "x86"]
+          : [arch];
+
+  const libNames: string[] = [];
+
+  if (platform === "darwin") {
+    for (const suffix of archSuffixes) {
+      libNames.push(`librust_pty_${suffix}.dylib`);
+    }
+    libNames.push("librust_pty.dylib");
+  } else if (platform === "win32") {
+    libNames.push(`rust_pty_${arch}.dll`);
+    libNames.push("rust_pty.dll");
+  } else {
+    for (const suffix of archSuffixes) {
+      libNames.push(`librust_pty_${suffix}.so`);
+    }
+    libNames.push("librust_pty.so");
+  }
 
   // Start from the current module's location
   const base = Bun.fileURLToPath(import.meta.url);
   // Handle both dist/ (production) and src/ (development/testing)
   const here = base.replace(/\/(dist|src)\/.*$/, "");
 
-  const fallbackPaths = [
-    join(dirname(base), filename), // same directory as index.js (for installed packages)
-    join(here, "rust-pty", "target", "release", filename), // project root/rust-pty/target/release
-    join(here, "..", "bun-pty", "rust-pty", "target", "release", filename), // legacy monorepo setups
-    join(
-      here,
-      "..",
-      "bun-pty-rust",
-      "rust-pty",
-      "target",
-      "release",
-      filename,
-    ), // monorepo when package renamed to bun-pty-rust
+  const fallbackBases = [
+    dirname(base), // same directory as index.js (for installed packages)
+    join(here, "rust-pty", "target", "release"), // project root/rust-pty/target/release
+    join(here, "..", "bun-pty", "rust-pty", "target", "release"), // legacy monorepo setups
+    join(here, "..", "bun-pty-rust", "rust-pty", "target", "release"), // monorepo when package renamed to bun-pty-rust
     join(
       process.cwd(),
       "node_modules",
@@ -52,7 +64,6 @@ function resolveLibPath(): string {
       "rust-pty",
       "target",
       "release",
-      filename,
     ), // legacy node_modules installs
     join(
       process.cwd(),
@@ -61,9 +72,16 @@ function resolveLibPath(): string {
       "rust-pty",
       "target",
       "release",
-      filename,
     ), // standard node_modules installs
   ];
+
+  const fallbackPaths: string[] = [];
+
+  for (const name of libNames) {
+    for (const basePath of fallbackBases) {
+      fallbackPaths.push(join(basePath, name));
+    }
+  }
 
   for (const path of fallbackPaths) {
     if (existsSync(path)) return path;
