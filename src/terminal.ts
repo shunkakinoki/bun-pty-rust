@@ -19,25 +19,21 @@ function resolveLibPath(): string {
 	if (env && existsSync(env)) return env;
 
 	const platform = process.platform;
-	const arch = process.arch;
 
 	const filename =
 		platform === "darwin"
-			? arch === "arm64"
-				? "librust_pty_arm64.dylib"
-				: "librust_pty.dylib"
+			? "librust_pty.dylib"
 			: platform === "win32"
 			? "rust_pty.dll"
-			: arch === "arm64"
-			? "librust_pty_arm64.so"
 			: "librust_pty.so";
 
-	// Start from the current module's location (inside node_modules/bun-pty/dist)
+	// Start from the current module's location
 	const base = Bun.fileURLToPath(import.meta.url);
-	const here = base.replace(/\/dist\/.*$/, ""); // up to bun-pty/
-	
+	// Handle both dist/ (production) and src/ (development/testing)
+	const here = base.replace(/\/(dist|src)\/.*$/, "");
+
 	const fallbackPaths = [
-		join(here, "rust-pty", "target", "release", filename),       // node_modules/bun-pty/rust-pty/target/release
+		join(here, "rust-pty", "target", "release", filename),       // project root/rust-pty/target/release
 		join(here, "..", "bun-pty", "rust-pty", "target", "release", filename), // monorepo setups
 		join(process.cwd(), "node_modules", "bun-pty", "rust-pty", "target", "release", filename),
 	];
@@ -107,11 +103,12 @@ export class Terminal implements IPty {
 		const cmdline = [file, ...args].join(" ");
 
 		// Format environment variables as null-terminated string
-		let envStr = "";
-		if (opts.env) {
-			const envPairs = Object.entries(opts.env).map(([k, v]) => `${k}=${v}`);
-			envStr = envPairs.join("\0") + "\0";
-		}
+		// Default to parent process environment if not specified
+		const env = opts.env ?? process.env;
+		const envPairs = Object.entries(env)
+			.filter(([_, v]) => v !== undefined)
+			.map(([k, v]) => `${k}=${v}`);
+		const envStr = envPairs.join("\0") + "\0";
 
 		this.handle = lib.symbols.bun_pty_spawn(
 			Buffer.from(`${cmdline}\0`, "utf8"),

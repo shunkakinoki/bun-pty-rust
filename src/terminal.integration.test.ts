@@ -38,7 +38,7 @@ test("Terminal can spawn a real process", () => {
 
 test("Terminal can receive data from a real process", async () => {
   // Use a script command that will definitely produce output - use single argument for '-c' option
-  const terminal = new Terminal("bash", ["-c", "echo 'Hello from Bun PTY'"]);
+  const terminal = new Terminal("bash", ["-c", "\"echo 'Hello from Bun PTY'\""]);
   terminals.push(terminal);
   
   // Collect output and track when process exits
@@ -75,7 +75,7 @@ test("Terminal can send data to a real process", async () => {
   let hasExited = false;
   
   // Use a properly quoted bash command
-  const terminal = new Terminal("bash", ["-c", "read line; echo \"You typed: $line\""]);
+  const terminal = new Terminal("bash", ["-c", "\"read line; echo \\\"You typed: $line\\\"\""]);
   terminals.push(terminal);
   
   terminal.onData((data) => {
@@ -180,33 +180,227 @@ test("Terminal can retrieve the correct process ID", () => {
 test("Terminal can run a bash script", async () => {
   let dataReceived = "";
   let hasExited = false;
-  
+
   // Use a properly quoted bash command
-  const terminal = new Terminal("bash", ["-c", "echo 'Hello' && sleep 0.2 && echo 'World'"]);
+  const terminal = new Terminal("bash", ["-c", "\"echo 'Hello' && sleep 0.2 && echo 'World'\""]);
   terminals.push(terminal);
-  
+
   terminal.onData((data) => {
     console.log("[TEST] Received data:", data);
     dataReceived += data;
   });
-  
+
   terminal.onExit(() => {
     console.log("[TEST] Process exited");
     hasExited = true;
   });
-  
+
   // Wait for process to exit or timeout
   const timeout = 2000; // 2 second timeout
   const start = Date.now();
-  
+
   while (!hasExited && Date.now() - start < timeout) {
     // Wait a bit
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  
+
   // Allow a short delay for any buffered output to be processed
   await new Promise(resolve => setTimeout(resolve, 100));
-  
+
   expect(dataReceived).toContain("Hello");
   expect(dataReceived).toContain("World");
+});
+
+test("Terminal can pass custom environment variables", async () => {
+  let dataReceived = "";
+  let hasExited = false;
+
+  // Create a terminal with custom environment variables
+  const terminal = new Terminal("bash", ["-c", "\"echo \\\"TEST_VAR=$TEST_VAR\\\"\""], {
+    env: {
+      PATH: process.env.PATH || "/usr/bin:/bin",
+      TEST_VAR: "custom_value_123"
+    }
+  });
+  terminals.push(terminal);
+
+  terminal.onData((data) => {
+    console.log("[TEST] Received data:", data);
+    dataReceived += data;
+  });
+
+  terminal.onExit(() => {
+    console.log("[TEST] Process exited");
+    hasExited = true;
+  });
+
+  // Wait for process to exit or timeout
+  const timeout = 2000;
+  const start = Date.now();
+
+  while (!hasExited && Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  // Allow a short delay for any buffered output to be processed
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  expect(dataReceived).toContain("TEST_VAR=custom_value_123");
+});
+
+test("Terminal can inherit parent environment with custom overrides", async () => {
+  let dataReceived = "";
+  let hasExited = false;
+
+  // Create a terminal that inherits parent env and adds custom variables
+  const terminal = new Terminal("bash", ["-c", "\"echo \\\"CUSTOM=$CUSTOM_VAR\\\" && echo \\\"PATH_EXISTS=$([[ -n \\\"$PATH\\\" ]] && echo 'yes' || echo 'no')\\\"\""], {
+    env: {
+      ...process.env,
+      CUSTOM_VAR: "inherited_test"
+    }
+  });
+  terminals.push(terminal);
+
+  terminal.onData((data) => {
+    console.log("[TEST] Received data:", data);
+    dataReceived += data;
+  });
+
+  terminal.onExit(() => {
+    console.log("[TEST] Process exited");
+    hasExited = true;
+  });
+
+  // Wait for process to exit or timeout
+  const timeout = 2000;
+  const start = Date.now();
+
+  while (!hasExited && Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  // Allow a short delay for any buffered output to be processed
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  expect(dataReceived).toContain("CUSTOM=inherited_test");
+  expect(dataReceived).toContain("PATH_EXISTS=yes");
+});
+
+test("Terminal with empty env should not have parent environment variables", async () => {
+  let dataReceived = "";
+  let hasExited = false;
+
+  // Set a unique variable in the parent that should NOT be inherited
+  const uniqueTestVar = "UNIQUE_PARENT_VAR_12345";
+  process.env[uniqueTestVar] = "should_not_appear";
+
+  // Create a terminal with empty environment (bash still needs to be found, so we use absolute path)
+  const terminal = new Terminal("/bin/bash", ["-c", `\"echo \\\"TEST_VAR_EXISTS=$([[ -n \\\"$${uniqueTestVar}\\\" ]] && echo 'yes' || echo 'no')\\\"\"`], {
+    env: {}
+  });
+  terminals.push(terminal);
+
+  terminal.onData((data) => {
+    console.log("[TEST] Received data:", data);
+    dataReceived += data;
+  });
+
+  terminal.onExit(() => {
+    console.log("[TEST] Process exited");
+    hasExited = true;
+  });
+
+  // Wait for process to exit or timeout
+  const timeout = 2000;
+  const start = Date.now();
+
+  while (!hasExited && Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  // Allow a short delay for any buffered output to be processed
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  // Clean up the test variable
+  delete process.env[uniqueTestVar];
+
+  expect(dataReceived).toContain("TEST_VAR_EXISTS=no");
+});
+
+test("Terminal can handle environment variables with special characters", async () => {
+  let dataReceived = "";
+  let hasExited = false;
+
+  // Create a terminal with env variables containing special characters
+  const terminal = new Terminal("bash", ["-c", "\"echo \\\"SPECIAL=$SPECIAL_VAR\\\"\""], {
+    env: {
+      PATH: process.env.PATH || "/usr/bin:/bin",
+      SPECIAL_VAR: "value with spaces and=equals"
+    }
+  });
+  terminals.push(terminal);
+
+  terminal.onData((data) => {
+    console.log("[TEST] Received data:", data);
+    dataReceived += data;
+  });
+
+  terminal.onExit(() => {
+    console.log("[TEST] Process exited");
+    hasExited = true;
+  });
+
+  // Wait for process to exit or timeout
+  const timeout = 2000;
+  const start = Date.now();
+
+  while (!hasExited && Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  // Allow a short delay for any buffered output to be processed
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  expect(dataReceived).toContain("SPECIAL=value with spaces and=equals");
+});
+
+test("Terminal can pass multiple environment variables", async () => {
+  let dataReceived = "";
+  let hasExited = false;
+
+  // Create a terminal with multiple env variables
+  const terminal = new Terminal("bash", ["-c", "\"echo \\\"VAR1=$VAR1 VAR2=$VAR2 VAR3=$VAR3\\\"\""], {
+    env: {
+      PATH: process.env.PATH || "/usr/bin:/bin",
+      VAR1: "value1",
+      VAR2: "value2",
+      VAR3: "value3"
+    }
+  });
+  terminals.push(terminal);
+
+  terminal.onData((data) => {
+    console.log("[TEST] Received data:", data);
+    dataReceived += data;
+  });
+
+  terminal.onExit(() => {
+    console.log("[TEST] Process exited");
+    hasExited = true;
+  });
+
+  // Wait for process to exit or timeout
+  const timeout = 2000;
+  const start = Date.now();
+
+  while (!hasExited && Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  // Allow a short delay for any buffered output to be processed
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  expect(dataReceived).toContain("VAR1=value1");
+  expect(dataReceived).toContain("VAR2=value2");
+  expect(dataReceived).toContain("VAR3=value3");
 }); 

@@ -59,6 +59,10 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Build Rust
+        run: |
+          cd rust-pty
+          cargo build --release
       - name: Test
         run: bun run test
       - name: Test Integration

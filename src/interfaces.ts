@@ -41,8 +41,9 @@ export class EventEmitter<T> {
 export interface IPtyForkOptions {
   /**
    * The name of the terminal to be set in environment variables.
+   * Defaults to "xterm-256color".
    */
-  name: string;
+  name?: string;
 
   /**
    * The number of columns in the PTY.

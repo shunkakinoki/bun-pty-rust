@@ -96,6 +96,8 @@ impl Command {
         for a in &self.args {
             b.arg(a);
         }
+        // Clear inherited environment and use only the provided env vars
+        b.env_clear();
         for (k, v) in &self.env {
             b.env(k, v);
         }
