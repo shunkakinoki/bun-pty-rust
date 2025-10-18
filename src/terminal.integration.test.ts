@@ -441,3 +441,64 @@ test("Terminal can pass multiple environment variables", async () => {
   expect(dataReceived).toContain("VAR2=value2");
   expect(dataReceived).toContain("VAR3=value3");
 });
+
+test("Terminal handles large output without data loss", async () => {
+  let dataReceived = "";
+  let hasExited = false;
+
+  // Use sh with a for loop to generate 1000 numbered lines
+  const terminal = new Terminal("sh");
+  terminals.push(terminal);
+
+  terminal.onData((data) => {
+    dataReceived += data;
+  });
+
+  terminal.onExit(() => {
+    console.log("[TEST] Process exited");
+    hasExited = true;
+  });
+
+  // Give the shell time to start
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // Send command to generate 1000 numbered lines
+  terminal.write(
+    'for i in $(seq 1 1000); do echo "Line $i: This is a test line to verify that no data is lost when reading from the PTY"; done\n',
+  );
+
+  // Wait a bit then exit the shell
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+  terminal.write("exit\n");
+
+  // Wait for process to complete or timeout
+  const timeout = 5000; // 5 second timeout for large output
+  const start = Date.now();
+
+  while (!hasExited && Date.now() - start < timeout) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  // Allow time for any buffered output to be processed
+  await new Promise((resolve) => setTimeout(resolve, 200));
+
+  // Count the lines we received
+  const lines = dataReceived.split("\n").filter((line) => line.includes("Line "));
+  console.log(`[TEST] Received ${lines.length} lines of output`);
+
+  // Check that we got all 1000 lines
+  const missingLines: number[] = [];
+  for (let i = 1; i <= 1000; i++) {
+    if (!dataReceived.includes(`Line ${i}:`)) {
+      missingLines.push(i);
+    }
+  }
+
+  if (missingLines.length > 0) {
+    console.error(`[TEST] Missing lines: ${missingLines.join(", ")}`);
+  }
+
+  // All 1000 lines should be present
+  expect(missingLines.length).toBe(0);
+  expect(lines.length).toBeGreaterThanOrEqual(1000);
+});
