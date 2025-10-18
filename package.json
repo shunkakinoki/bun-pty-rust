@@ -44,8 +44,8 @@
 		"test:integration": "cd rust-pty && cargo build --release && cd .. && RUN_INTEGRATION_TESTS=true bun test src/terminal.integration.test.ts",
 		"check": "bun run type-check",
 		"format": "bun run format:check",
-		"format:check": "bunx @biomejs/biome check --write",
-		"lint": "bunx @biomejs/biome check",
+		"format:check": "bun run biome check --write",
+		"lint": "bun run biome check",
 		"type-check": "tsc --noEmit",
 		"clean": "rm -rf ./dist && cd rust-pty && cargo clean"
 	},
@@ -62,7 +62,7 @@
 		"rust-pty/target/release/*.dll"
 	],
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
+		"@biomejs/biome": "2.2.6",
 		"@types/bun": "^1.2.13",
 		"@types/node": "^22.15.18",
 		"typescript": "^5.8.3"

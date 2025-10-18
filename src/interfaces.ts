@@ -1,5 +1,3 @@
-import { Buffer } from "node:buffer";
-
 /**
  * Interface for disposable resources.
  */
@@ -24,7 +22,7 @@ export class EventEmitter<T> {
         if (i !== -1) {
           this.listeners.splice(i, 1);
         }
-      }
+      },
     };
   };
 
@@ -138,4 +136,4 @@ export interface IPty {
    * Defaults to "SIGTERM".
    */
   kill(signal?: string): void;
-} 
+}

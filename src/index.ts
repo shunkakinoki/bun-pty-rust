@@ -3,21 +3,25 @@
  * Provides a cross-platform PTY interface for Bun runtime.
  */
 
-import { Terminal } from './terminal';
-import { IPty, IPtyForkOptions, IExitEvent, IDisposable } from './interfaces';
+import { IDisposable, IExitEvent, IPty, IPtyForkOptions } from "./interfaces";
+import { Terminal } from "./terminal";
 
 /**
  * Creates and spawns a new PTY with the given command and arguments.
- * 
+ *
  * @param file - Path to the executable to run.
  * @param args - Arguments for the executable.
  * @param options - Options for the PTY.
  * @returns A new PTY instance.
  */
-export function spawn(file: string, args: string[], options: IPtyForkOptions): IPty {
-    return new Terminal(file, args, options);
+export function spawn(
+  file: string,
+  args: string[],
+  options: IPtyForkOptions,
+): IPty {
+  return new Terminal(file, args, options);
 }
 
 // Export interfaces and implementations
 export { IPty, IPtyForkOptions, IExitEvent, IDisposable };
-export { Terminal } from './terminal'; 
+export { Terminal } from "./terminal";
