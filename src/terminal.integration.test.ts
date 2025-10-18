@@ -40,10 +40,7 @@ test("Terminal can spawn a real process", () => {
 
 test("Terminal can receive data from a real process", async () => {
   // Use a script command that will definitely produce output - use single argument for '-c' option
-  const terminal = new Terminal("bash", [
-    "-c",
-    "\"echo 'Hello from Bun PTY'\"",
-  ]);
+  const terminal = new Terminal("bash", ["-c", "echo 'Hello from Bun PTY'"]);
   terminals.push(terminal);
 
   // Collect output and track when process exits
@@ -82,7 +79,7 @@ test("Terminal can send data to a real process", async () => {
   // Use a properly quoted bash command
   const terminal = new Terminal("bash", [
     "-c",
-    '"read line; echo \\"You typed: $line\\""',
+    'read line; echo "You typed: $line"',
   ]);
   terminals.push(terminal);
 
@@ -192,7 +189,7 @@ test("Terminal can run a bash script", async () => {
   // Use a properly quoted bash command
   const terminal = new Terminal("bash", [
     "-c",
-    "\"echo 'Hello' && sleep 0.2 && echo 'World'\"",
+    "echo 'Hello' && sleep 0.2 && echo 'World'",
   ]);
   terminals.push(terminal);
 
@@ -227,16 +224,12 @@ test("Terminal can pass custom environment variables", async () => {
   let hasExited = false;
 
   // Create a terminal with custom environment variables
-  const terminal = new Terminal(
-    "bash",
-    ["-c", '"echo \\"TEST_VAR=$TEST_VAR\\""'],
-    {
-      env: {
-        PATH: process.env.PATH || "/usr/bin:/bin",
-        TEST_VAR: "custom_value_123",
-      },
+  const terminal = new Terminal("bash", ["-c", 'echo "TEST_VAR=$TEST_VAR"'], {
+    env: {
+      PATH: process.env.PATH || "/usr/bin:/bin",
+      TEST_VAR: "custom_value_123",
     },
-  );
+  });
   terminals.push(terminal);
 
   terminal.onData((data) => {
@@ -272,7 +265,7 @@ test("Terminal can inherit parent environment with custom overrides", async () =
     "bash",
     [
       "-c",
-      '"echo \\"CUSTOM=$CUSTOM_VAR\\" && echo \\"PATH_EXISTS=$([[ -n \\"$PATH\\" ]] && echo \'yes\' || echo \'no\')\\""',
+      'echo "CUSTOM=$CUSTOM_VAR" && echo "PATH_EXISTS=$([[ -n "$PATH" ]] && echo \'yes\' || echo \'no\')"',
     ],
     {
       env: {
@@ -321,7 +314,7 @@ test("Terminal with empty env should not have parent environment variables", asy
     "/bin/bash",
     [
       "-c",
-      `"echo \\"TEST_VAR_EXISTS=$([[ -n \\"$${uniqueTestVar}\\" ]] && echo 'yes' || echo 'no')\\""`,
+      `echo "TEST_VAR_EXISTS=$([[ -n "$${uniqueTestVar}" ]] && echo 'yes' || echo 'no')"`,
     ],
     {
       env: {},
@@ -361,16 +354,12 @@ test("Terminal can handle environment variables with special characters", async 
   let hasExited = false;
 
   // Create a terminal with env variables containing special characters
-  const terminal = new Terminal(
-    "bash",
-    ["-c", '"echo \\"SPECIAL=$SPECIAL_VAR\\""'],
-    {
-      env: {
-        PATH: process.env.PATH || "/usr/bin:/bin",
-        SPECIAL_VAR: "value with spaces and=equals",
-      },
+  const terminal = new Terminal("bash", ["-c", 'echo "SPECIAL=$SPECIAL_VAR"'], {
+    env: {
+      PATH: process.env.PATH || "/usr/bin:/bin",
+      SPECIAL_VAR: "value with spaces and=equals",
     },
-  );
+  });
   terminals.push(terminal);
 
   terminal.onData((data) => {
@@ -404,7 +393,7 @@ test("Terminal can pass multiple environment variables", async () => {
   // Create a terminal with multiple env variables
   const terminal = new Terminal(
     "bash",
-    ["-c", '"echo \\"VAR1=$VAR1 VAR2=$VAR2 VAR3=$VAR3\\""'],
+    ["-c", 'echo "VAR1=$VAR1 VAR2=$VAR2 VAR3=$VAR3"'],
     {
       env: {
         PATH: process.env.PATH || "/usr/bin:/bin",
@@ -483,7 +472,9 @@ test("Terminal handles large output without data loss", async () => {
   await new Promise((resolve) => setTimeout(resolve, 200));
 
   // Count the lines we received
-  const lines = dataReceived.split("\n").filter((line) => line.includes("Line "));
+  const lines = dataReceived
+    .split("\n")
+    .filter((line) => line.includes("Line "));
   console.log(`[TEST] Received ${lines.length} lines of output`);
 
   // Check that we got all 1000 lines
