@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2025-10-18
+
+### Fixed
+- Fixed bash -c command failures due to improper shell argument escaping
+- Added proper quoting for arguments containing spaces or special characters
+
+### Changed
+- Added quoteArg function to automatically handle shell argument escaping
+- Added additional fallback path for library resolution in development environments
+- Updated integration tests to use proper argument quoting
+
 ## [0.2.0] - 2025-10-18
 
 ### Added
