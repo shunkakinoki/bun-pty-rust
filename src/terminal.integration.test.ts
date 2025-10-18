@@ -521,3 +521,29 @@ test("Terminal handles large output without data loss", async () => {
   expect(missingLines.length).toBe(0);
   expect(lines.length).toBeGreaterThanOrEqual(1000);
 });
+
+test("Terminal can detect non-zero exit codes", async () => {
+  let exitEvent: IExitEvent | null = null;
+
+  // Run a command that exits with code 1
+  const terminal = new Terminal("false", [], { env: getEnv() });
+  terminals.push(terminal);
+
+  terminal.onExit((event) => {
+    console.log("[TEST] Process exited with event:", event);
+    exitEvent = event;
+  });
+
+  // Wait for exit event
+  const timeout = 2000; // 2 second timeout
+  const start = Date.now();
+
+  while (!exitEvent && Date.now() - start < timeout) {
+    // Wait a bit
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  expect(exitEvent).not.toBeNull();
+  // biome-ignore lint/style/noNonNullAssertion: exitEvent is not null after expect check
+  expect(exitEvent!.exitCode).not.toBe(0); // false exits with 1
+});
