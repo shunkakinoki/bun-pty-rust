@@ -3,7 +3,7 @@
 import { dlopen, FFIType, ptr } from "bun:ffi";
 import { Buffer } from "node:buffer";
 import { existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import type { IExitEvent, IPty, IPtyForkOptions } from "./interfaces";
 import { EventEmitter } from "./interfaces";
 
